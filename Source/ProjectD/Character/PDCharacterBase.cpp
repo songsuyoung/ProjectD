@@ -2,6 +2,7 @@
 
 
 #include "PDCharacterBase.h"
+#include "Physics/PDCollision.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -22,28 +23,11 @@ APDCharacterBase::APDCharacterBase()
 	GetCharacterMovement()->bWantsToCrouch = false;
 
 	//CapsuleComponent
-	GetCapsuleComponent()->InitCapsuleSize(35.f, 90.0f);
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision")); //나중에 변경 예정
+	GetCapsuleComponent()->InitCapsuleSize(25.f, 90.0f);
+	GetCapsuleComponent()->SetCollisionProfileName(CCHANNEL_PDCAPSULE); //나중에 변경 예정
 	
 	//SkeletalMesh
-	GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -100.f), FRotator(0.0f, -90.f, 0.f));
+	GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -90.f), FRotator(0.0f, -90.f, 0.f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
-
-	//일단, 언리얼엔진 기본 캐릭터로 구현 예정
 }
-
-// Called when the game starts or when spawned
-void APDCharacterBase::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// Called to bind functionality to input
-void APDCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
-

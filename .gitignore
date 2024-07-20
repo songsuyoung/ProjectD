@@ -76,3 +76,7 @@ DerivedDataCache/*
 Platforms/*
 
 Content/Orasot_Bundle/
+Content/ThirdPerson/
+Content/__ExternalActors__/
+Content/__ExternalObjects__/
+Content/LevelPrototyping/
