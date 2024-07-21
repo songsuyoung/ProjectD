@@ -36,7 +36,6 @@ void UPDInputComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &UPDInputComponent::Move);
-
 	}
 }
 
