@@ -30,15 +30,18 @@ APDCharacterPlayer::APDCharacterPlayer()
 	CameraSpringArm->SetupAttachment(RootComponent);
 	CameraSpringArm->bUsePawnControlRotation = false; //QuaterView는 회전하지 않는다.
 	CameraSpringArm->TargetArmLength = 500.f;
+	CameraSpringArm->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when character does
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	Camera->SetupAttachment(CameraSpringArm);
-
+	Camera->SetupAttachment(CameraSpringArm, USpringArmComponent::SocketName);
+	Camera->bUsePawnControlRotation = false;
 	PDInputComponent = CreateDefaultSubobject<UPDInputComponent>(TEXT("InputComponent"));
 }
 
 void APDCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
 	PDInputComponent->SetupPlayerInputComponent(PlayerInputComponent);
 }
 

@@ -4,9 +4,15 @@
 #include "Character/PDInputComponent.h"
 #include "Character/PDCharacterPlayer.h"
 #include "Player/PDPlayerController.h"
+#include "Physics/PDCollision.h"
+
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+
+#include "Blueprint/AIBlueprintHelperLibrary.h"
+
+#include "ProjectD.h"
 
 UPDInputComponent::UPDInputComponent()
 {
@@ -24,23 +30,28 @@ UPDInputComponent::UPDInputComponent()
 	{
 		MoveAction = MoveActionRef.Object;
 	}
+
+	CachedDestination = FVector::ZeroVector;
+	FollowTime = 0.f;
 }
 
 void UPDInputComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	Owner = Cast<APDCharacterPlayer>(this->GetOwner());
-
 	if (Owner)
 	{
-		PC = Owner->GetController<APDPlayerController>(); //입력이 들어올 때 초기화해준다. 
 		UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Started, this, &UPDInputComponent::OnInputStarted);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &UPDInputComponent::OnSetDestinationTriggered);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &UPDInputComponent::OnSetDestinationReleased);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Canceled, this, &UPDInputComponent::OnSetDestinationReleased);
 
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &UPDInputComponent::Move);
 	}
 }
 
 void UPDInputComponent::SetCharacterControl()
 {
+	Owner = Cast<APDCharacterPlayer>(this->GetOwner());
+	PC = Owner->GetController<APDPlayerController>();
 	if (PC)
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
@@ -56,6 +67,39 @@ void UPDInputComponent::SetCharacterControl()
 	}
 }
 
-void UPDInputComponent::Move(const FInputActionValue& Value)
+void UPDInputComponent::OnInputStarted()
 {
+	if (PC == nullptr) return;
+
+	PC->StopMovement(); //시작할 때 기존 움직임을 멈추고,
+}
+
+void UPDInputComponent::OnSetDestinationTriggered()
+{
+	if (PC == nullptr || Owner == nullptr) return;
+
+	FollowTime += GetWorld()->GetDeltaSeconds();
+
+	FHitResult HitResult;
+	bool bHitSuccessful = PC->GetHitResultUnderCursor(CCHANNEL_PDGROUND, true, HitResult);
+
+	if (bHitSuccessful)
+	{
+		CachedDestination = HitResult.Location;
+	}
+
+	FVector Destination = (CachedDestination - Owner->GetActorLocation()).GetSafeNormal();
+	Owner->AddMovementInput(Destination);
+}
+
+void UPDInputComponent::OnSetDestinationReleased()
+{
+	if (PC == nullptr) return;
+
+	if (FollowTime <= ShortPressThreshold)
+	{
+		UAIBlueprintHelperLibrary::SimpleMoveToLocation(PC, CachedDestination);
+	}
+
+	FollowTime = 0.f;
 }

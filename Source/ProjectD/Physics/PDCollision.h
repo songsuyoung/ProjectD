@@ -1,3 +1,5 @@
 #pragma once
 
-#define CCHANNEL_PDCAPSULE TEXT("PDCapsule")
+#define CPROFILE_PDCAPSULE TEXT("PDCapsule")
+
+#define CCHANNEL_PDGROUND ECC_GameTraceChannel1

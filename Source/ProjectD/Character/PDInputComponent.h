@@ -32,7 +32,17 @@ protected:
 
 protected:
 /*InputAction Func Section*/
-	void Move(const FInputActionValue& Value);
+	/** Input handlers for SetDestination action. */
+	void OnInputStarted();
+	void OnSetDestinationTriggered();
+	void OnSetDestinationReleased();
+
+protected:
+	FVector CachedDestination; //목적지를 캐싱
+	float FollowTime; //얼마나 길게 눌렀는지를 체크하기 위함.
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	float ShortPressThreshold; //누른 초의 기준
 
 /*Player Section*/
 protected:

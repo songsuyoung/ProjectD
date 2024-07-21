@@ -38,7 +38,7 @@ protected:
 	/*Input*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UPDInputComponent> PDInputComponent;
-	void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent);
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
 	/*Defualt Player*/
