@@ -12,6 +12,7 @@
 #include "GameFramework/SpringArmComponent.h"
 
 #include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 
 #include "ProjectD.h"
 
@@ -95,7 +96,7 @@ void UPDInputComponent::SetCharacterControl()
 void UPDInputComponent::OnMoveInputStarted()
 {
 	if (PC == nullptr) return;
-
+	
 	PC->StopMovement(); //시작할 때 기존 움직임을 멈추고,
 }
 
@@ -107,14 +108,21 @@ void UPDInputComponent::OnSetDestinationTriggered()
 
 	FHitResult HitResult;
 	bool bHitSuccessful = PC->GetHitResultUnderCursor(CCHANNEL_PDGROUND, true, HitResult);
-
+	
 	if (bHitSuccessful)
 	{
 		CachedDestination = HitResult.Location;
 	}
 
-	FVector Destination = (CachedDestination - Owner->GetActorLocation()).GetSafeNormal();
-	Owner->AddMovementInput(Destination);
+	//클릭한 곳으로 회전하도록 한다.
+	FVector Direction = CachedDestination - Owner->GetActorLocation();
+	FRotator LookAtRotation = UKismetMathLibrary::MakeRotFromX(Direction);
+	LookAtRotation.Pitch = 0.f;
+	LookAtRotation.Roll = 0.f;
+	Owner->SetActorRotation(LookAtRotation); //바라보는 방향으로 회전
+	
+	FVector Destination = (Direction).GetSafeNormal();
+	Owner->AddMovementInput(Destination); //이동
 }
 
 void UPDInputComponent::OnSetDestinationReleased()
