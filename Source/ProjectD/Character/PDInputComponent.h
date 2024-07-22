@@ -30,20 +30,37 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> MoveAction;
 
-protected:
-/*InputAction Func Section*/
-	/** Input handlers for SetDestination action. */
-	void OnInputStarted();
-	void OnSetDestinationTriggered();
-	void OnSetDestinationReleased();
-
-protected:
 	FVector CachedDestination; //목적지를 캐싱
 	float FollowTime; //얼마나 길게 눌렀는지를 체크하기 위함.
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	float ShortPressThreshold; //누른 초의 기준
 
+protected:
+	void OnMoveInputStarted();
+	void OnSetDestinationTriggered();
+	void OnSetDestinationReleased();
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> LookAction;
+	
+	void Look(const FInputActionValue& Value);
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	float MouseSensitivity;
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> ZoomAction;
+
+	void Zoom(const FInputActionValue& Value);
+
+	int CameraPos;
+	int MaxCameraPos;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	int MinCameraPosThreshold;
 /*Player Section*/
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))

@@ -38,6 +38,17 @@ APDCharacterPlayer::APDCharacterPlayer()
 	PDInputComponent = CreateDefaultSubobject<UPDInputComponent>(TEXT("InputComponent"));
 }
 
+USpringArmComponent* APDCharacterPlayer::GetSpringArm()
+{
+	return CameraSpringArm;
+}
+
+int APDCharacterPlayer::SpringArmLength()
+{
+	if (CameraSpringArm == nullptr) return 0;
+	return CameraSpringArm->TargetArmLength;
+}
+
 void APDCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);

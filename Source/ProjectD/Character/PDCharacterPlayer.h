@@ -24,13 +24,18 @@ protected:
 	virtual void OnRep_Controller() override; //Client Only
 	virtual void BeginPlay() override;
 protected:
-
 	/*Spring Arm, Camera*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class USpringArmComponent> CameraSpringArm;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UCameraComponent> Camera;
+
+public:
+
+	USpringArmComponent* GetSpringArm();
+	/*Spring Arm Length*/
+	int SpringArmLength();
 
 	/*Mouse Zoom -> Camera ZoomIn/ZoomOut 구현 예정*/
 protected:

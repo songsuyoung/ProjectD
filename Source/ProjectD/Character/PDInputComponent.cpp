@@ -9,6 +9,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "GameFramework/SpringArmComponent.h"
 
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 
@@ -31,8 +32,23 @@ UPDInputComponent::UPDInputComponent()
 		MoveAction = MoveActionRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> LookActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/ProjectD/Inputs/InputAction/IA_Look.IA_Look'"));
+
+	if (LookActionRef.Object)
+	{
+		LookAction = LookActionRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> ZoomActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/ProjectD/Inputs/InputAction/IA_Zoom.IA_Zoom'"));
+
+	if (ZoomActionRef.Object)
+	{
+		ZoomAction = ZoomActionRef.Object;
+	}
+
 	CachedDestination = FVector::ZeroVector;
 	FollowTime = 0.f;
+	MouseSensitivity = 4.f; //CDO 내에서는 4.0으로 지정
 }
 
 void UPDInputComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -40,11 +56,13 @@ void UPDInputComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	if (Owner)
 	{
 		UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Started, this, &UPDInputComponent::OnInputStarted);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Started, this, &UPDInputComponent::OnMoveInputStarted);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &UPDInputComponent::OnSetDestinationTriggered);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &UPDInputComponent::OnSetDestinationReleased);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Canceled, this, &UPDInputComponent::OnSetDestinationReleased);
 
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &UPDInputComponent::Look);
+		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &UPDInputComponent::Zoom);
 	}
 }
 
@@ -65,9 +83,15 @@ void UPDInputComponent::SetCharacterControl()
 			}
 		}
 	}
+
+	if (Owner)
+	{
+		CameraPos = Owner->SpringArmLength();
+		MaxCameraPos = Owner->SpringArmLength();
+	}
 }
 
-void UPDInputComponent::OnInputStarted()
+void UPDInputComponent::OnMoveInputStarted()
 {
 	if (PC == nullptr) return;
 
@@ -102,4 +126,37 @@ void UPDInputComponent::OnSetDestinationReleased()
 	}
 
 	FollowTime = 0.f;
+}
+
+void UPDInputComponent::Look(const FInputActionValue& Value)
+{
+	if (Owner == nullptr) return;
+
+	//Yaw값과 Pitch값을 가져옴
+	FVector2D LookAxisVector = Value.Get<FVector2D>();
+	//Spring Arm의 World좌표를 가져와야함.
+	USpringArmComponent* SpringArm = Owner->GetSpringArm();
+
+	if (SpringArm)
+	{
+		float Pitch = LookAxisVector.Y * MouseSensitivity;
+		float Yaw = LookAxisVector.X * MouseSensitivity; //감도 설정
+
+		SpringArm->AddWorldRotation(FRotator(0.f, Yaw, 0.f)); // Yaw의 기준은 월드 상에서 동작
+		SpringArm->AddLocalRotation(FRotator(Pitch, 0.f, 0.f)); //위 아래는 로컬 상에서 동작
+	}
+}
+
+void UPDInputComponent::Zoom(const FInputActionValue& Value)
+{
+	if (Value.GetMagnitude() > 0.f)
+	{
+		//원상태로 복귀
+		CameraPos = FMath::Clamp(++CameraPos, MinCameraPosThreshold, MaxCameraPos);
+	}
+	else
+	{
+		//하나씩 증가
+		CameraPos = FMath::Clamp(--CameraPos, MinCameraPosThreshold, MaxCameraPos);
+	}
 }
