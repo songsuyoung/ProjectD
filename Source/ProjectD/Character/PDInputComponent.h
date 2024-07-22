@@ -61,6 +61,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	int MinCameraPosThreshold;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	float MouseWheelSensitivity;
+
 /*Player Section*/
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))

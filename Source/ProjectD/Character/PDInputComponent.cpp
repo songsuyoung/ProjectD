@@ -49,6 +49,7 @@ UPDInputComponent::UPDInputComponent()
 	CachedDestination = FVector::ZeroVector;
 	FollowTime = 0.f;
 	MouseSensitivity = 4.f; //CDO 내에서는 4.0으로 지정
+	MouseWheelSensitivity = 20.f; //COD 에서 20.f으로 지정
 }
 
 void UPDInputComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -136,27 +137,34 @@ void UPDInputComponent::Look(const FInputActionValue& Value)
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 	//Spring Arm의 World좌표를 가져와야함.
 	USpringArmComponent* SpringArm = Owner->GetSpringArm();
-
-	if (SpringArm)
+	if (SpringArm == nullptr)
 	{
-		float Pitch = LookAxisVector.Y * MouseSensitivity;
-		float Yaw = LookAxisVector.X * MouseSensitivity; //감도 설정
-
-		SpringArm->AddWorldRotation(FRotator(0.f, Yaw, 0.f)); // Yaw의 기준은 월드 상에서 동작
-		SpringArm->AddLocalRotation(FRotator(Pitch, 0.f, 0.f)); //위 아래는 로컬 상에서 동작
+		PD_SUBLOG(PDLog, Error, TEXT("SpringArm is Not founded"));
+		return;
 	}
+
+	float Pitch = LookAxisVector.Y * MouseSensitivity;
+	float Yaw = LookAxisVector.X * MouseSensitivity; //감도 설정
+
+	SpringArm->AddWorldRotation(FRotator(0.f, Yaw, 0.f)); // Yaw의 기준은 월드 상에서 동작
+	SpringArm->AddLocalRotation(FRotator(Pitch, 0.f, 0.f)); //위 아래는 로컬 상에서 동작
+
 }
 
 void UPDInputComponent::Zoom(const FInputActionValue& Value)
 {
-	if (Value.GetMagnitude() > 0.f)
+	float Direction = Value.Get<float>();
+
+	USpringArmComponent* SpringArm = Owner->GetSpringArm();
+
+	if (SpringArm == nullptr)
 	{
-		//원상태로 복귀
-		CameraPos = FMath::Clamp(++CameraPos, MinCameraPosThreshold, MaxCameraPos);
+		PD_SUBLOG(PDLog, Error, TEXT("SpringArm is Not founded"));
+		return;
 	}
-	else
-	{
-		//하나씩 증가
-		CameraPos = FMath::Clamp(--CameraPos, MinCameraPosThreshold, MaxCameraPos);
-	}
+	//Direction 음수인지, 양수인지에 따라서 값이 결정되기 때문에,
+	//덧셈과 곱셈을 사용해서 Pos값을 변하게 한다.
+	CameraPos += Direction * MouseWheelSensitivity;
+	CameraPos = FMath::Clamp(CameraPos, MinCameraPosThreshold, MaxCameraPos);
+	SpringArm->TargetArmLength = CameraPos;
 }
