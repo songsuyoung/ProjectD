@@ -12,12 +12,15 @@
 UCLASS()
 class PROJECTD_API APDPlayerState : public APlayerState
 {
-	GENERATED_BODY()
-	
-
+	GENERATED_BODY()	
 public:
 	APDPlayerState();
 
+	virtual void BeginPlay() override;
+
+	class UPDStatComponent* GetStat() { return Stat; }
 private:
 	//Player Info
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPDStatComponent> Stat;
 };
