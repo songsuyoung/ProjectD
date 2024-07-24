@@ -62,4 +62,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class APDPlayerState> PS;
 
+	/*Widget Component »ý¼º*/
+protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget)
+	TObjectPtr<class UPDHPWidgetComponent> HPWidget;
 };

@@ -8,6 +8,8 @@
 void UPDStat::SetProgressBar(float InCurrentVal, float InMaxVal)
 {
 	ProgressBar->SetPercent(InCurrentVal / InMaxVal);
+
+	SetPercentage(InCurrentVal, InMaxVal);
 }
 
 void UPDStat::SetPercentage(float InCurrentVal, float InMaxVal)

@@ -32,6 +32,7 @@ protected:
 	TMap<PDEUIType, TSubclassOf<class UUserWidget>> HUDClass;
 
 protected:
+	/*Callback Func*/
 	
 	UFUNCTION()
 	void UpdatedHP(float InHP, float InMaxHP);
@@ -39,4 +40,6 @@ protected:
 	UFUNCTION()
 	void OnUpdatedStamina(float InStamina, float InMaxStamina);
 
+	UFUNCTION()
+	void OnUpdatedPower(float InPower, float InMaxPower);
 };

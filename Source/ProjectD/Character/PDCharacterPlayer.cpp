@@ -7,7 +7,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Character/PDInputComponent.h"
 #include "Weapons/PDWeapon.h"
-
+#include "UI/PDHPWidgetComponent.h"
+#include "UI/PDStat.h"
 #include "ProjectD.h"
 APDCharacterPlayer::APDCharacterPlayer()
 {
@@ -37,8 +38,22 @@ APDCharacterPlayer::APDCharacterPlayer()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(CameraSpringArm, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
-	PDInputComponent = CreateDefaultSubobject<UPDInputComponent>(TEXT("InputComponent"));
+	PDInputComponent = CreateDefaultSubobject<UPDInputComponent>(TEXT("InputComponent"));	
+
+	HPWidget = CreateDefaultSubobject<UPDHPWidgetComponent>(TEXT("HPWidgetComponent"));
+	/*머리를 움직일 때마다 같이 따라다니면서 움직여야함.*/
+	HPWidget->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("head"));
+	HPWidget->SetWidgetSpace(EWidgetSpace::Screen); //스크린상에 띄울 예정
+	HPWidget->SetDrawSize(FVector2D(30.f, 60.f));
+	HPWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
+	/*HPWidget UserWidget*/
+	static ConstructorHelpers::FClassFinder<UPDStat> StatWidget(TEXT("/Game/ProjectD/HUD/UI/WB_Stat.WB_Stat_C"));
+
+	if (StatWidget.Class)
+	{
+		HPWidget->SetWidgetClass(StatWidget.Class);
+	}
 }
 
 USpringArmComponent* APDCharacterPlayer::GetSpringArm()

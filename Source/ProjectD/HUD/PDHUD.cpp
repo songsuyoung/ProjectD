@@ -6,6 +6,7 @@
 #include "Player/PDPlayerState.h"
 #include "Stat/PDStatComponent.h"
 
+#include "UI/PDStat.h"
 #include "ProjectD.h"
 void APDHUD::CreateUI()
 {
@@ -22,6 +23,15 @@ void APDHUD::CreateUI()
         Widget->AddToViewport(0);
         Widget->SetVisibility(ESlateVisibility::Visible);
         HUDs.Add(HUD.Key, Widget);
+    }
+
+    /*델리게이트 연결*/
+    APDPlayerState* PS = GetOwningPawn()->GetPlayerState<APDPlayerState>();
+    if (PS)
+    {
+        PS->GetStat()->OnUpdatedHP.AddUObject(this, &APDHUD::UpdatedHP);
+        PS->GetStat()->OnUpdatedStamina.AddUObject(this, &APDHUD::OnUpdatedStamina);
+        PS->GetStat()->OnUpdatedPower.AddUObject(this, &APDHUD::OnUpdatedPower);
     }
 
 }
@@ -63,9 +73,33 @@ void APDHUD::SetHidden(PDEUIType UIType)
 
 void APDHUD::UpdatedHP(float InHP, float InMaxHP)
 {
+    UPDStat* Widget = Cast<UPDStat>(HUDs[PDEUIType::Main]);
+
+    if (Widget)
+    {
+        //Update HP
+        Widget->SetProgressBar(InHP, InMaxHP);
+    }
 }
 
 void APDHUD::OnUpdatedStamina(float InStamina, float InMaxStamina)
 {
+    UPDStat* Widget = Cast<UPDStat>(HUDs[PDEUIType::Main]);
+
+    if (Widget)
+    {
+        //Update Stamina
+        Widget->SetProgressBar(InStamina, InMaxStamina);
+    }
+}
+
+void APDHUD::OnUpdatedPower(float InPower, float InMaxPower)
+{
+    UUserWidget* Widget = HUDs[PDEUIType::Main];
+
+    if (Widget)
+    {
+        //Update Power
+    }
 }
 
