@@ -65,3 +65,7 @@ void APDHUD::UpdatedHP(float InHP, float InMaxHP)
 {
 }
 
+void APDHUD::OnUpdatedStamina(float InStamina, float InMaxStamina)
+{
+}
+

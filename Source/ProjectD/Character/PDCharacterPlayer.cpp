@@ -6,7 +6,9 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Character/PDInputComponent.h"
+#include "Weapons/PDWeapon.h"
 
+#include "ProjectD.h"
 APDCharacterPlayer::APDCharacterPlayer()
 {
 
@@ -36,6 +38,7 @@ APDCharacterPlayer::APDCharacterPlayer()
 	Camera->SetupAttachment(CameraSpringArm, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
 	PDInputComponent = CreateDefaultSubobject<UPDInputComponent>(TEXT("InputComponent"));
+	
 }
 
 USpringArmComponent* APDCharacterPlayer::GetSpringArm()
@@ -81,4 +84,12 @@ void APDCharacterPlayer::BeginPlay()
 	}
 
 	PDInputComponent->SetCharacterControl();
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	Weapon = GetWorld()->SpawnActor<APDWeapon>(DefaultWeaponClass, SpawnParams);
+	if (Weapon)
+	{
+		Weapon->Equip(this);
+	}
 }

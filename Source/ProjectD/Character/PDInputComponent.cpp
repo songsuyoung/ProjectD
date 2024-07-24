@@ -51,6 +51,10 @@ UPDInputComponent::UPDInputComponent()
 	FollowTime = 0.f;
 	MouseSensitivity = 4.f; //CDO 내에서는 4.0으로 지정
 	MouseWheelSensitivity = 20.f; //COD 에서 20.f으로 지정
+
+	//1Level 기본 Weapon : 도끼
+	// 
+	//2Level 선택 
 }
 
 void UPDInputComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

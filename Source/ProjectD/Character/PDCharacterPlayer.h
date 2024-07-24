@@ -45,6 +45,15 @@ protected:
 	TObjectPtr<class UPDInputComponent> PDInputComponent;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	/*무기*/
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
+	TObjectPtr<class APDWeapon> Weapon;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Weapon)
+	TSubclassOf<class APDWeapon> DefaultWeaponClass;
+
+	/*Attack에 대한 공격 Component를 만들어서, 여러 Weapon에 유연하게 대응하자*/
 protected:
 	/*Defualt Player*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player, Meta = (AllowPrivateAccess = "true"))
