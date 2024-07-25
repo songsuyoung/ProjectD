@@ -9,6 +9,8 @@
 #include "Weapons/PDWeapon.h"
 #include "UI/PDHPWidgetComponent.h"
 #include "UI/PDStat.h"
+
+#include "Character/PDSkillComponent.h"
 #include "ProjectD.h"
 APDCharacterPlayer::APDCharacterPlayer()
 {
@@ -54,6 +56,9 @@ APDCharacterPlayer::APDCharacterPlayer()
 	{
 		HPWidget->SetWidgetClass(StatWidget.Class);
 	}
+
+	AttackComponent = CreateDefaultSubobject<UPDSkillComponent>(TEXT("SkillComponent"));
+
 }
 
 USpringArmComponent* APDCharacterPlayer::GetSpringArm()
@@ -73,7 +78,6 @@ void APDCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 	PDInputComponent->SetupPlayerInputComponent(PlayerInputComponent);
 }
-
 
 void APDCharacterPlayer::PossessedBy(AController* NewController)
 {
@@ -106,5 +110,24 @@ void APDCharacterPlayer::BeginPlay()
 	if (Weapon)
 	{
 		Weapon->Equip(this);
+	}
+}
+
+
+void APDCharacterPlayer::Skill(PDESkillType SkillType)
+{
+	PDEWeaponType WeaponType = Weapon->GetWeaponType();
+
+	TArray<FAttackSkillDelegateWrapper> FoundDelegates;
+	AttackComponent->AttackDelegate.MultiFind(WeaponType, FoundDelegates);
+
+	for (const FAttackSkillDelegateWrapper& DelegateWrapper : FoundDelegates)
+	{
+		if (DelegateWrapper.AttackSkillDelegate.Find(SkillType) == false)
+		{
+			continue;
+		}
+		
+		DelegateWrapper.AttackSkillDelegate[SkillType].Execute();
 	}
 }

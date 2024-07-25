@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Character/PDCharacterBase.h"
+#include "GameData/PDEWeaponType.h"
+#include "GameData/PDESkillType.h"
 #include "PDCharacterPlayer.generated.h"
 
 /**
@@ -54,6 +56,12 @@ protected:
 	TSubclassOf<class APDWeapon> DefaultWeaponClass;
 
 	/*Attack에 대한 공격 Component를 만들어서, 여러 Weapon에 유연하게 대응하자*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
+	TObjectPtr<class UPDSkillComponent> AttackComponent;
+
+public:
+	void Skill(PDESkillType SkillType);
+
 protected:
 	/*Defualt Player*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player, Meta = (AllowPrivateAccess = "true"))

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GameData/PDEWeaponType.h"
 #include "PDWeapon.generated.h"
 
 UCLASS()
@@ -17,6 +18,8 @@ public:
 
 	void Equip(class ACharacter *Character);
 
+	PDEWeaponType GetWeaponType() { return WeaponType; }
+
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Weapon)
@@ -29,4 +32,7 @@ protected:
 	void OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	uint8 bIsAttacking : 1;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
+	PDEWeaponType WeaponType;
 };

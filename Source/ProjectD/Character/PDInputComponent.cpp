@@ -14,6 +14,9 @@
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 
+#include "GameData/PDESkillType.h"
+#include "GameData/PDESkillType.h"
+
 #include "ProjectD.h"
 
 UPDInputComponent::UPDInputComponent()
@@ -47,6 +50,31 @@ UPDInputComponent::UPDInputComponent()
 		ZoomAction = ZoomActionRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> AttackBaseActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/ProjectD/Inputs/InputAction/IA_AttackBase.IA_AttackBase'"));
+
+	if (AttackBaseActionRef.Object)
+	{
+		AttackBaseAction = AttackBaseActionRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> AttackSkillQActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/ProjectD/Inputs/InputAction/IA_AttackQ.IA_AttackQ'"));
+
+	if (AttackSkillQActionRef.Object)
+	{
+		AttackSkillQAction = AttackSkillQActionRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> AttackSkillWActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/ProjectD/Inputs/InputAction/IA_AttackW.IA_AttackW'"));
+
+	if (AttackSkillWActionRef.Object)
+	{
+		AttackSkillWAction = AttackSkillWActionRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> AttackSkillEActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/ProjectD/Inputs/InputAction/IA_AttackE.IA_AttackE'"));
+
+	if (AttackSkillEActionRef.Object)
+	{
+		AttackSkillEAction = AttackSkillEActionRef.Object;
+	}
+
 	CachedDestination = FVector::ZeroVector;
 	FollowTime = 0.f;
 	MouseSensitivity = 4.f; //CDO 내에서는 4.0으로 지정
@@ -69,6 +97,11 @@ void UPDInputComponent::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &UPDInputComponent::Look);
 		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &UPDInputComponent::Zoom);
+
+		EnhancedInputComponent->BindAction(AttackBaseAction, ETriggerEvent::Started, this, &UPDInputComponent::Attack, PDESkillType::Base);
+		EnhancedInputComponent->BindAction(AttackSkillQAction, ETriggerEvent::Started, this, &UPDInputComponent::Attack, PDESkillType::SkillQ);
+		EnhancedInputComponent->BindAction(AttackSkillWAction, ETriggerEvent::Started, this, &UPDInputComponent::Attack, PDESkillType::SkillW);
+		EnhancedInputComponent->BindAction(AttackSkillEAction, ETriggerEvent::Started, this, &UPDInputComponent::Attack, PDESkillType::SkillE);
 	}
 }
 
@@ -179,4 +212,11 @@ void UPDInputComponent::Zoom(const FInputActionValue& Value)
 	CameraPos += Direction * MouseWheelSensitivity;
 	CameraPos = FMath::Clamp(CameraPos, MinCameraPosThreshold, MaxCameraPos);
 	SpringArm->TargetArmLength = CameraPos;
+}
+
+void UPDInputComponent::Attack(PDESkillType SkillType)
+{
+	PD_SUBLOG(PDLog, Log, TEXT("Skill Type %d"), SkillType);
+	//입력받은 키를 전달할 예정
+	Owner->Skill(SkillType);
 }
