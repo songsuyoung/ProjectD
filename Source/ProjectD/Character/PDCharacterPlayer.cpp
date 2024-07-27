@@ -9,9 +9,11 @@
 #include "Weapons/PDWeapon.h"
 #include "UI/PDHPWidgetComponent.h"
 #include "UI/PDStat.h"
-
+#include "Animation/AnimMontage.h"
 #include "Character/PDSkillComponent.h"
+#include "EngineUtils.h"
 #include "ProjectD.h"
+
 APDCharacterPlayer::APDCharacterPlayer()
 {
 
@@ -130,4 +132,45 @@ void APDCharacterPlayer::Skill(PDESkillType SkillType)
 		
 		DelegateWrapper.AttackSkillDelegate[SkillType].Execute();
 	}
+}
+
+void APDCharacterPlayer::IncreaseComboIdx()
+{
+	AttackComponent->ComboAttackIndex = FMath::Clamp(AttackComponent->ComboAttackIndex + 1, 0, Weapon->GetMaxComboLen());
+}
+
+void APDCharacterPlayer::DecreaseComboIdx()
+{
+	AttackComponent->ComboAttackIndex = FMath::Clamp(AttackComponent->ComboAttackIndex - 1, 0, Weapon->GetMaxComboLen()); //Weapon에 따라서 가능한 콤보 개수가 달라진다.
+}
+
+void APDCharacterPlayer::PlayAnimation(FName MontageSection)
+{
+	ServerRPCAttackAnimation(MontageSection);
+}
+
+void APDCharacterPlayer::MontageJumpToSection(FName MontageSection)
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AttackComponent->ComboAttackIndex == 0)
+	{
+		AnimInstance->Montage_Play(Weapon->GetAnimMontage(), Weapon->GetPlayRate());
+	}
+	else
+	{
+		AnimInstance->Montage_JumpToSection(MontageSection, Weapon->GetAnimMontage());
+	}
+}
+
+void APDCharacterPlayer::ServerRPCAttackAnimation_Implementation(FName MontageSection)
+{
+	MontageJumpToSection(MontageSection);
+	MulticastRPCAttackAnimation(MontageSection);
+}
+
+void APDCharacterPlayer::MulticastRPCAttackAnimation_Implementation(FName MontageSection)
+{
+	PD_LOG(PDLog, Log, TEXT("MulticastRPC Attack Play"));
+	MontageJumpToSection(MontageSection);
 }

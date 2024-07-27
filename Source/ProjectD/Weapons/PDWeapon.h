@@ -17,8 +17,11 @@ public:
 	APDWeapon();
 
 	void Equip(class ACharacter *Character);
-
-	PDEWeaponType GetWeaponType() { return WeaponType; }
+	void UnEquip();
+	int GetMaxComboLen();
+	float GetPlayRate();
+	PDEWeaponType GetWeaponType();
+	class UAnimMontage* GetAnimMontage();
 
 protected:
 
@@ -33,6 +36,7 @@ protected:
 
 	uint8 bIsAttacking : 1;
 	
+	/*GameData·Î ¹­ÀÚ*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
-	PDEWeaponType WeaponType;
+	TObjectPtr<class UPDWeaponData> WeaponData;
 };

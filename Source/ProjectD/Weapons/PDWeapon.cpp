@@ -6,6 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/Character.h"
 #include "Stat/PDStatComponent.h"
+#include "GameData/PDWeaponData.h"
 #include "Physics/PDCollision.h"
 
 #include "ProjectD.h"
@@ -42,6 +43,38 @@ void APDWeapon::Equip(ACharacter* Character)
 		AttachToComponent(Character->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("weapon"));
 		this->SetActorRelativeRotation(FRotator(0.f, 180.f, 0.0f));
 	}
+}
+
+void APDWeapon::UnEquip()
+{
+	ACharacter* Character = GetOwner<ACharacter>();
+	if (Character)
+	{
+		//DetachÇÑ´Ù.
+		Character->GetMesh();
+		SetOwner(nullptr);
+	}
+
+}
+
+int APDWeapon::GetMaxComboLen()
+{
+	return WeaponData->MaxComboLen;
+}
+
+float APDWeapon::GetPlayRate()
+{
+	return 1.0f;
+}
+
+PDEWeaponType APDWeapon::GetWeaponType()
+{
+	return WeaponData->WeaponType;
+}
+
+UAnimMontage* APDWeapon::GetAnimMontage()
+{
+	return WeaponData->AttackMontage;
 }
 
 void APDWeapon::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

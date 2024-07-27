@@ -12,7 +12,7 @@
 /*Delegate Skill에 대해 선언*/
 DECLARE_DELEGATE(FOnAttackSkillDelegate);
 /*실제 공격을 수행할 델리게이트*/
-
+DECLARE_DELEGATE(FOnComboAttackDelegate);
 USTRUCT(BlueprintType)
 struct FAttackSkillDelegateWrapper
 {
@@ -22,6 +22,17 @@ public:
 	FAttackSkillDelegateWrapper() { }
 	FAttackSkillDelegateWrapper(PDESkillType SkillType, const FOnAttackSkillDelegate& InAttackSkillDelegate) { AttackSkillDelegate.Add(SkillType, InAttackSkillDelegate); }
 	TMap<PDESkillType, FOnAttackSkillDelegate> AttackSkillDelegate;
+};
+
+USTRUCT(BlueprintType)
+struct FOnComboAttackDelegateWrapper
+{
+	GENERATED_BODY()
+
+public:
+	FOnComboAttackDelegateWrapper() { }
+	FOnComboAttackDelegateWrapper(const FOnComboAttackDelegate& InOnComboAttackDelegate) { OnComboAttackDelegate = InOnComboAttackDelegate; }
+	FOnComboAttackDelegate OnComboAttackDelegate;
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -35,8 +46,13 @@ public:
 
 	TMultiMap< PDEWeaponType, FAttackSkillDelegateWrapper> AttackDelegate;
 
+	int8 ComboAttackIndex;
+	int ComboAttackLen;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
 protected:
 
+	FName GetNextSection();
 	void AttackBaseByAxe();
 	//Axe에 의한 스킬 Q
 	void SkillQByAxe();
@@ -44,5 +60,21 @@ protected:
 	void SkillWByAxe();
 	//Axe에 의한 스킬 
 	void SkillEByAxe();
+
+	void AttackBaseBySword();
+	//Sword에 의한 스킬 Q
+	void SkillQBySword();
+	//Sword에 의한 스킬 W
+	void SkillWBySword();
+	//Sword에 의한 스킬 
+	void SkillEBySword();
+
+	void AttackBaseByBow();
+	//Bow에 의한 스킬 Q
+	void SkillQByBow();
+	//Bow에 의한 스킬 W
+	void SkillWByBow();
+	//Bow에 의한 스킬 
+	void SkillEByBow();
 
 };

@@ -62,6 +62,9 @@ protected:
 public:
 	void Skill(PDESkillType SkillType);
 
+	void IncreaseComboIdx();
+	void DecreaseComboIdx();
+
 protected:
 	/*Defualt Player*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player, Meta = (AllowPrivateAccess = "true"))
@@ -75,4 +78,18 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget)
 	TObjectPtr<class UPDHPWidgetComponent> HPWidget;
+
+public:
+	/*Animation*/
+
+	void PlayAnimation(FName MontageSection);
+
+	void MontageJumpToSection(FName MontageSection);
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPCAttackAnimation(FName MontageSection);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCAttackAnimation(FName MontageSection);
+
 };
