@@ -38,8 +38,9 @@ void UPDSkillComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	AttackDelegate.Remove(PDEWeaponType::Bow);
 }
 
-FName UPDSkillComponent::GetNextSection()
+FName UPDSkillComponent::GetNextSection(int MaxLen)
 {
+	ComboAttackIndex = FMath::Clamp(ComboAttackIndex + 1, 1, MaxLen);
 	FName NextPunchSection = *FString::Printf(TEXT("Combo%d"), ComboAttackIndex);
 
 	return NextPunchSection;
@@ -51,7 +52,8 @@ void UPDSkillComponent::AttackBaseByAxe()
 	APDCharacterPlayer* Pawn = Cast<APDCharacterPlayer>(GetOwner());
 	if (Pawn)
 	{
-		Pawn->PlayAnimation(GetNextSection());
+		Pawn->ComboStart();
+		return;
 	}
 }
 

@@ -62,9 +62,24 @@ protected:
 public:
 	void Skill(PDESkillType SkillType);
 
-	void IncreaseComboIdx();
-	void DecreaseComboIdx();
+	void ComboActionBegin();
+	void NextComboAvailable(bool InAttacking) { bCanAttackNextCombo = InAttacking; }
 
+protected:
+	uint8 bCanAttackNextCombo : 1;
+	uint8 bCanAttack : 1;
+
+public:
+	/*Animation*/
+	void ComboStart();
+	void ComboEnd(UAnimMontage* TargetMontage, bool IsProperlyEnded);
+	void ComboCheck();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPCAttackAnimation();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCAttackAnimation();
 protected:
 	/*Defualt Player*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player, Meta = (AllowPrivateAccess = "true"))
@@ -78,18 +93,5 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget)
 	TObjectPtr<class UPDHPWidgetComponent> HPWidget;
-
-public:
-	/*Animation*/
-
-	void PlayAnimation(FName MontageSection);
-
-	void MontageJumpToSection(FName MontageSection);
-
-	UFUNCTION(Server, Reliable)
-	void ServerRPCAttackAnimation(FName MontageSection);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPCAttackAnimation(FName MontageSection);
 
 };

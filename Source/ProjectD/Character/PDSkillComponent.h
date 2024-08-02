@@ -48,11 +48,12 @@ public:
 
 	int8 ComboAttackIndex;
 	int ComboAttackLen;
-
+	FName GetNextSection(int MaxLen);
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
+
 protected:
 
-	FName GetNextSection();
+	FTimerHandle ComboTimerHandleByAxe;
 	void AttackBaseByAxe();
 	//Axe에 의한 스킬 Q
 	void SkillQByAxe();

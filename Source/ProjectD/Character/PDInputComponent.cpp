@@ -216,7 +216,8 @@ void UPDInputComponent::Zoom(const FInputActionValue& Value)
 
 void UPDInputComponent::Attack(PDESkillType SkillType)
 {
-	PD_SUBLOG(PDLog, Log, TEXT("Skill Type %d"), SkillType);
+	//현재 공격중이면 공격하면 안된다.
+	
 	//입력받은 키를 전달할 예정
 	Owner->Skill(SkillType);
 }

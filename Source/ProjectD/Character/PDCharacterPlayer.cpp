@@ -4,6 +4,7 @@
 #include "Character/PDCharacterPlayer.h"
 #include "Player/PDPlayerController.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Character/PDInputComponent.h"
 #include "Weapons/PDWeapon.h"
@@ -14,7 +15,7 @@
 #include "EngineUtils.h"
 #include "ProjectD.h"
 
-APDCharacterPlayer::APDCharacterPlayer()
+APDCharacterPlayer::APDCharacterPlayer() : bCanAttackNextCombo(false)
 {
 
 	//Default
@@ -132,45 +133,82 @@ void APDCharacterPlayer::Skill(PDESkillType SkillType)
 		
 		DelegateWrapper.AttackSkillDelegate[SkillType].Execute();
 	}
+
 }
 
-void APDCharacterPlayer::IncreaseComboIdx()
+void APDCharacterPlayer::ComboActionBegin()
 {
-	AttackComponent->ComboAttackIndex = FMath::Clamp(AttackComponent->ComboAttackIndex + 1, 0, Weapon->GetMaxComboLen());
-}
 
-void APDCharacterPlayer::DecreaseComboIdx()
-{
-	AttackComponent->ComboAttackIndex = FMath::Clamp(AttackComponent->ComboAttackIndex - 1, 0, Weapon->GetMaxComboLen()); //Weapon에 따라서 가능한 콤보 개수가 달라진다.
-}
+	PD_LOG(PDLog, Log, TEXT("1"));
+	AttackComponent->ComboAttackIndex = 1;
 
-void APDCharacterPlayer::PlayAnimation(FName MontageSection)
-{
-	ServerRPCAttackAnimation(MontageSection);
-}
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None); //이동 못하도록함
 
-void APDCharacterPlayer::MontageJumpToSection(FName MontageSection)
-{
+	const float AnimPlayRate = Weapon->GetPlayRate();
+
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
-	if (AttackComponent->ComboAttackIndex == 0)
+	if (AnimInstance)
 	{
 		AnimInstance->Montage_Play(Weapon->GetAnimMontage(), Weapon->GetPlayRate());
 	}
-	else
+
+	FOnMontageEnded EndDelegate;
+	EndDelegate.BindUObject(this, &APDCharacterPlayer::ComboEnd);
+	AnimInstance->Montage_SetEndDelegate(EndDelegate, Weapon->GetAnimMontage());
+}
+
+void APDCharacterPlayer::ComboCheck()
+{
+
+	PD_LOG(PDLog, Log, TEXT("2"));
+	if (bCanAttack == false) return;
+	PD_LOG(PDLog, Log, TEXT("3"));
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	
+	if (AnimInstance)
 	{
-		AnimInstance->Montage_JumpToSection(MontageSection, Weapon->GetAnimMontage());
+		FName NextSection = AttackComponent->GetNextSection(Weapon->GetMaxComboLen());
+		AnimInstance->Montage_JumpToSection(NextSection, Weapon->GetAnimMontage());
+		PD_LOG(PDLog, Log, TEXT("6"));
+		bCanAttack = false;
 	}
 }
 
-void APDCharacterPlayer::ServerRPCAttackAnimation_Implementation(FName MontageSection)
+void APDCharacterPlayer::ComboStart()
 {
-	MontageJumpToSection(MontageSection);
-	MulticastRPCAttackAnimation(MontageSection);
+	if (AttackComponent->ComboAttackIndex == 0 || bCanAttack == false)
+	{
+		ServerRPCAttackAnimation();	
+	}
 }
 
-void APDCharacterPlayer::MulticastRPCAttackAnimation_Implementation(FName MontageSection)
+void APDCharacterPlayer::ComboEnd(UAnimMontage* TargetMontage, bool IsProperlyEnded)
 {
-	PD_LOG(PDLog, Log, TEXT("MulticastRPC Attack Play"));
-	MontageJumpToSection(MontageSection);
+	PD_LOG(PDLog, Log, TEXT("5"));
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking); //이동 못하도록함
+	bCanAttackNextCombo = false;
+	bCanAttack = false;
+	AttackComponent->ComboAttackIndex = 0;
+}
+
+void APDCharacterPlayer::ServerRPCAttackAnimation_Implementation()
+{
+	MulticastRPCAttackAnimation();
+}
+
+void APDCharacterPlayer::MulticastRPCAttackAnimation_Implementation()
+{
+	if (AttackComponent->ComboAttackIndex == 0)
+	{
+		ComboActionBegin();
+		return;
+	}
+
+	/*애니메이션 Begin/End에 의해서 설정 bCanAttackNextCombo*/
+	if (bCanAttackNextCombo)
+	{
+		PD_LOG(PDLog, Log, TEXT("4"));
+		bCanAttack = true; /*다음 공격이 가능한가*/
+	}
 }
