@@ -11,7 +11,12 @@
 #include "UI/PDHPWidgetComponent.h"
 #include "UI/PDStat.h"
 #include "Animation/AnimMontage.h"
+#include "NavigationSystem.h"
+#include "NavigationPath.h"
 #include "Character/PDSkillComponent.h"
+#include "Components/SplineComponent.h"
+#include "GameData/PDDataManager.h"
+#include "Interfaces/PDPostMissionInterface.h"
 #include "EngineUtils.h"
 #include "ProjectD.h"
 
@@ -61,7 +66,7 @@ APDCharacterPlayer::APDCharacterPlayer() : bCanAttackNextCombo(false)
 	}
 
 	AttackComponent = CreateDefaultSubobject<UPDSkillComponent>(TEXT("SkillComponent"));
-
+	Path = CreateDefaultSubobject<USplineComponent>(TEXT("Path"));
 }
 
 USpringArmComponent* APDCharacterPlayer::GetSpringArm()
@@ -114,6 +119,14 @@ void APDCharacterPlayer::BeginPlay()
 	{
 		Weapon->Equip(this);
 	}
+
+	//서버에서만 동작하구나... => 
+	// NavMeshBoundsVolume NetLoadOnClinet가 켜져있지만, 클라이언트에 복사하면서 생성됐을 때 Nav 크기를 잡지 못해서 발생하는 문제같음
+	// Runtime Generate 를 true로 변경했을 때, 클라이언트 상 복사시 네비게이션 박스 크기를 재조정해서 네비게이션 관련 함수 사용이 가능해짐
+	if (IsLocallyControlled())
+	{
+		SetPath();
+	}
 }
 
 
@@ -138,7 +151,6 @@ void APDCharacterPlayer::Skill(PDESkillType SkillType)
 
 void APDCharacterPlayer::ComboActionBegin()
 {
-
 	PD_LOG(PDLog, Log, TEXT("1"));
 	AttackComponent->ComboAttackIndex = 1;
 
@@ -210,5 +222,43 @@ void APDCharacterPlayer::MulticastRPCAttackAnimation_Implementation()
 	{
 		PD_LOG(PDLog, Log, TEXT("4"));
 		bCanAttack = true; /*다음 공격이 가능한가*/
+	}
+}
+
+void APDCharacterPlayer::AddMovementInput(FVector WorldDirection, float ScaleValue, bool bForce)
+{
+	Super::AddMovementInput(WorldDirection, ScaleValue, bForce);
+	//Volume의 위치를 가져온다.
+	//이동할 때마다 Update를 수행한다.
+	//클라이언트 상에서만 호출된다.
+	SetPath();
+}
+
+void APDCharacterPlayer::SetPath()
+{
+	PathLocInfo.Empty(); 
+	UPDDataManager* DataManager = GetWorld()->GetSubsystem<UPDDataManager>();
+
+	if (DataManager)
+	{
+		//플레이어는 현재 미션에 대한 정보를 가지고 있어야함.
+		//Type은 변경 예정.
+		IPDPostMissionInterface* Mission = Cast<IPDPostMissionInterface>(DataManager->GetMission(PDEMissionType::Mission1));
+		if (Mission)
+		{
+			FVector StartPos = GetActorLocation();
+			FVector EndPos = Mission->GetPosition();
+			UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(GetWorld(), StartPos, EndPos);
+		
+			if (NavPath)
+			{
+				for (const auto& PathPoint : NavPath->PathPoints)
+				{
+					PathLocInfo.Add(PathPoint);
+
+					PD_LOG(PDLog, Log, TEXT("%s"), *PathPoint.ToString());
+				}
+			}
+		}
 	}
 }

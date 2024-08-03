@@ -94,4 +94,22 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget)
 	TObjectPtr<class UPDHPWidgetComponent> HPWidget;
 
+public:
+
+	/*길을 표현하기 위해서 사용*/
+	virtual void AddMovementInput(FVector WorldDirection, float ScaleValue = 1.0f, bool bForce = false) override;
+
+protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Path)
+	TObjectPtr<class USplineComponent> Path;
+
+	/*이후 재사용성을 생각해보자*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Path)
+	TArray<TObjectPtr<class USplineMeshComponent>> PathMeshComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Path)
+	TArray<FVector> PathLocInfo;
+
+	void SetPath();
 };
