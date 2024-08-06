@@ -6,13 +6,14 @@
 #include "Character/PDCharacterBase.h"
 #include "GameData/PDEWeaponType.h"
 #include "GameData/PDESkillType.h"
+#include "Interfaces/PDClearPathInterface.h"
 #include "PDCharacterPlayer.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTD_API APDCharacterPlayer : public APDCharacterBase
+class PROJECTD_API APDCharacterPlayer : public APDCharacterBase, public IPDClearPathInterface
 {
 	GENERATED_BODY()
 	
@@ -99,8 +100,10 @@ public:
 	/*길을 표현하기 위해서 사용*/
 	virtual void AddMovementInput(FVector WorldDirection, float ScaleValue = 1.0f, bool bForce = false) override;
 
+	/*미션 공간에 닿았을 때 Path구역이 사라진다.*/
+	virtual void ClearPath() override;
 protected:
-
+	/*서버는 없어도, 클라이언트만 생성으로 서버의 부하를 줄인다.*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Path)
 	TObjectPtr<class USplineComponent> Path;
 
@@ -108,8 +111,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Path)
 	TArray<TObjectPtr<class USplineMeshComponent>> PathMeshComp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Path)
-	TArray<FVector> PathLocInfo;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Path)
+	TSubclassOf<class USplineMeshComponent> PathMeshClass;
 
 	void SetPath();
+	void InitPath();
+	void DrawPath(int PathLen);
+	
 };

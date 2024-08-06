@@ -15,8 +15,12 @@
 #include "NavigationPath.h"
 #include "Character/PDSkillComponent.h"
 #include "Components/SplineComponent.h"
+#include "Components/SplineMeshComponent.h"
+#include "Engine/StaticMesh.h"
+
 #include "GameData/PDDataManager.h"
 #include "Interfaces/PDPostMissionInterface.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "EngineUtils.h"
 #include "ProjectD.h"
 
@@ -143,7 +147,6 @@ void APDCharacterPlayer::Skill(PDESkillType SkillType)
 		{
 			continue;
 		}
-		
 		DelegateWrapper.AttackSkillDelegate[SkillType].Execute();
 	}
 
@@ -151,7 +154,6 @@ void APDCharacterPlayer::Skill(PDESkillType SkillType)
 
 void APDCharacterPlayer::ComboActionBegin()
 {
-	PD_LOG(PDLog, Log, TEXT("1"));
 	AttackComponent->ComboAttackIndex = 1;
 
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None); //이동 못하도록함
@@ -171,10 +173,7 @@ void APDCharacterPlayer::ComboActionBegin()
 
 void APDCharacterPlayer::ComboCheck()
 {
-
-	PD_LOG(PDLog, Log, TEXT("2"));
 	if (bCanAttack == false) return;
-	PD_LOG(PDLog, Log, TEXT("3"));
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	
@@ -197,7 +196,6 @@ void APDCharacterPlayer::ComboStart()
 
 void APDCharacterPlayer::ComboEnd(UAnimMontage* TargetMontage, bool IsProperlyEnded)
 {
-	PD_LOG(PDLog, Log, TEXT("5"));
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking); //이동 못하도록함
 	bCanAttackNextCombo = false;
 	bCanAttack = false;
@@ -220,7 +218,6 @@ void APDCharacterPlayer::MulticastRPCAttackAnimation_Implementation()
 	/*애니메이션 Begin/End에 의해서 설정 bCanAttackNextCombo*/
 	if (bCanAttackNextCombo)
 	{
-		PD_LOG(PDLog, Log, TEXT("4"));
 		bCanAttack = true; /*다음 공격이 가능한가*/
 	}
 }
@@ -236,7 +233,9 @@ void APDCharacterPlayer::AddMovementInput(FVector WorldDirection, float ScaleVal
 
 void APDCharacterPlayer::SetPath()
 {
-	PathLocInfo.Empty(); 
+	Path->ClearSplinePoints(true); //이전에 그렸던 모든 포인터를 지운다.
+	InitPath();
+
 	UPDDataManager* DataManager = GetWorld()->GetSubsystem<UPDDataManager>();
 
 	if (DataManager)
@@ -252,13 +251,60 @@ void APDCharacterPlayer::SetPath()
 		
 			if (NavPath)
 			{
-				for (const auto& PathPoint : NavPath->PathPoints)
+				int Index = 0;
+				for (auto& PathPoint : NavPath->PathPoints)
 				{
-					PathLocInfo.Add(PathPoint);
-
-					PD_LOG(PDLog, Log, TEXT("%s"), *PathPoint.ToString());
+					Path->AddSplinePointAtIndex(PathPoint, Index++, ESplineCoordinateSpace::World);
 				}
+
+				DrawPath(NavPath->PathPoints.Num());
 			}
 		}
+	}
+}
+
+void APDCharacterPlayer::InitPath()
+{
+	for (int32 Index = 0; Index < PathMeshComp.Num(); Index++)
+	{
+		if (PathMeshComp[Index])
+		{
+			PathMeshComp[Index]->DestroyComponent();
+		}
+	}
+}
+
+void APDCharacterPlayer::DrawPath(int PathLen)
+{
+	
+	for (int32 Index = 0; Index < PathLen - 1; Index++)
+	{
+		USplineMeshComponent* MeshComp = NewObject<USplineMeshComponent>(this, PathMeshClass);
+	
+		MeshComp->SetMobility(EComponentMobility::Stationary);
+		MeshComp->CreationMethod = EComponentCreationMethod::UserConstructionScript;
+		MeshComp->RegisterComponentWithWorld(GetWorld());
+
+		MeshComp->AttachToComponent(Path, FAttachmentTransformRules::KeepRelativeTransform);
+		MeshComp->SetStartScale(FVector2D(UKismetSystemLibrary::MakeLiteralFloat(0.1f), UKismetSystemLibrary::MakeLiteralFloat(1.f)));
+		MeshComp->SetEndScale(FVector2D(UKismetSystemLibrary::MakeLiteralFloat(0.1f), UKismetSystemLibrary::MakeLiteralFloat(1.f)));
+
+		FVector StartPoint = Path->GetLocationAtSplinePoint(Index, ESplineCoordinateSpace::Local);
+		FVector StartTangent = Path->GetTangentAtSplinePoint(Index, ESplineCoordinateSpace::Local);
+		FVector EndPoint = Path->GetLocationAtSplinePoint(Index + 1, ESplineCoordinateSpace::Local);
+		FVector EndTangent = Path->GetTangentAtSplinePoint(Index + 1, ESplineCoordinateSpace::Local);
+
+		MeshComp->SetStartAndEnd(StartPoint, StartTangent, EndPoint, EndTangent);
+		MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		PathMeshComp.Add(MeshComp);
+	}
+}
+
+void APDCharacterPlayer::ClearPath()
+{
+	if (Path)
+	{
+		Path->ClearSplinePoints(true);
 	}
 }
