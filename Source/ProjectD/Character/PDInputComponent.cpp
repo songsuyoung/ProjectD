@@ -218,6 +218,10 @@ void UPDInputComponent::Attack(PDESkillType SkillType)
 {
 	//현재 공격중이면 공격하면 안된다.
 	
-	//입력받은 키를 전달할 예정
-	Owner->Skill(SkillType);
+	//if (Owner->GetAttacking())
+	{
+		PD_SUBLOG(PDLog, Log, TEXT("1"));
+		//입력받은 키를 전달할 예정
+		Owner->Skill(SkillType);
+	}
 }

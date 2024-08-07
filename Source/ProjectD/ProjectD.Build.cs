@@ -9,7 +9,7 @@ public class ProjectD : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
         PublicIncludePaths.AddRange(new string[] { "ProjectD" });
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "NavigationSystem", "InputCore", "EnhancedInput", "UMG", "NavigationSystem", "AIModule" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "NavigationSystem", "InputCore", "EnhancedInput", "UMG", "NavigationSystem", "AIModule", "Niagara" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

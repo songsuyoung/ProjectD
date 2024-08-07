@@ -62,25 +62,28 @@ protected:
 
 public:
 	void Skill(PDESkillType SkillType);
+	void ComboBegin();
+	void ComboNext();
 
-	void ComboActionBegin();
-	void NextComboAvailable(bool InAttacking) { bCanAttackNextCombo = InAttacking; }
+	UFUNCTION()
+	void ComboEnd();
+	void PlayAttackAnimation();
+	void ComboInit();
 
+	UFUNCTION(Client, Reliable)
+	void ClientRPCBaseSkill(class APDCharacterPlayer* OtherPlayer);
+
+	UFUNCTION()
+	void OnRep_CanAttack();
 protected:
-	uint8 bCanAttackNextCombo : 1;
-	uint8 bCanAttack : 1;
 
-public:
-	/*Animation*/
-	void ComboStart();
-	void ComboEnd(UAnimMontage* TargetMontage, bool IsProperlyEnded);
-	void ComboCheck();
+	UPROPERTY(ReplicatedUsing = OnRep_CanAttack)
+	uint8 bCanAttack : 1;	
+	
+	/** Returns properties that are replicated for the lifetime of the actor channel */
+	virtual void GetLifetimeReplicatedProps(TArray< class FLifetimeProperty >& OutLifetimeProps) const;
 
-	UFUNCTION(Server, Reliable)
-	void ServerRPCAttackAnimation();
 
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPCAttackAnimation();
 protected:
 	/*Defualt Player*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player, Meta = (AllowPrivateAccess = "true"))
@@ -103,8 +106,9 @@ public:
 	/*미션 공간에 닿았을 때 Path구역이 사라진다.*/
 	virtual void ClearPath() override;
 protected:
+
 	/*서버는 없어도, 클라이언트만 생성으로 서버의 부하를 줄인다.*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Path)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Path)
 	TObjectPtr<class USplineComponent> Path;
 
 	/*이후 재사용성을 생각해보자*/

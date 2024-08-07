@@ -54,6 +54,7 @@ public:
 protected:
 
 	FTimerHandle ComboTimerHandleByAxe;
+
 	void AttackBaseByAxe();
 	//Axe에 의한 스킬 Q
 	void SkillQByAxe();
@@ -77,5 +78,17 @@ protected:
 	void SkillWByBow();
 	//Bow에 의한 스킬 
 	void SkillEByBow();
+
+protected:
+	//RPC
+	UFUNCTION(Server,Reliable)
+	void ServerRPCBaseSkill(float Time);
+
+	void ResetAttack();
+
+	FTimerHandle AttackTimerHandle;
+	float AttackTime;
+	float LastAttackStartTime;
+	float AttackTimeDifference;
 
 };
