@@ -82,7 +82,10 @@ protected:
 protected:
 	//RPC
 	UFUNCTION(Server,Reliable)
-	void ServerRPCBaseSkill(float Time);
+	void ServerRPCBaseSkill();
+
+	UFUNCTION(NetMulticast,Reliable)
+	void MulticastRPCBaseSkill();
 
 	void ResetAttack();
 

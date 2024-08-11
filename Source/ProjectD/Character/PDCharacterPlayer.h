@@ -62,27 +62,11 @@ protected:
 
 public:
 	void Skill(PDESkillType SkillType);
-	void ComboBegin();
-	void ComboNext();
-
-	UFUNCTION()
-	void ComboEnd();
 	void PlayAttackAnimation();
-	void ComboInit();
-
-	UFUNCTION(Client, Reliable)
-	void ClientRPCBaseSkill(class APDCharacterPlayer* OtherPlayer);
-
-	UFUNCTION()
-	void OnRep_CanAttack();
-protected:
-
-	UPROPERTY(ReplicatedUsing = OnRep_CanAttack)
-	uint8 bCanAttack : 1;	
+	void PlayMontageNotifyBegin();
 	
-	/** Returns properties that are replicated for the lifetime of the actor channel */
-	virtual void GetLifetimeReplicatedProps(TArray< class FLifetimeProperty >& OutLifetimeProps) const;
-
+	UFUNCTION(Server,Reliable)
+	void ServerRPCEndedAttack();
 
 protected:
 	/*Defualt Player*/
@@ -105,6 +89,7 @@ public:
 
 	/*미션 공간에 닿았을 때 Path구역이 사라진다.*/
 	virtual void ClearPath() override;
+
 protected:
 
 	/*서버는 없어도, 클라이언트만 생성으로 서버의 부하를 줄인다.*/

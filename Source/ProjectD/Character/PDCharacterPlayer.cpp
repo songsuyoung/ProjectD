@@ -25,7 +25,7 @@
 #include "EngineUtils.h"
 #include "ProjectD.h"
 
-APDCharacterPlayer::APDCharacterPlayer() : bCanAttack(false)
+APDCharacterPlayer::APDCharacterPlayer()
 {
 
 	//Default
@@ -240,77 +240,46 @@ void APDCharacterPlayer::ClearPath()
 	}
 }
 
-void APDCharacterPlayer::ComboBegin()
-{
-	//애니메이션을 실행한다.
-	bCanAttack = false;
-	AttackComponent->ComboAttackIndex = 1;
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-	PlayAttackAnimation();
-}
-
-void APDCharacterPlayer::ComboNext()
-{
-	PD_LOG(PDLog, Log, TEXT("ComboNext"));
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
-	if (AnimInstance)
-	{
-		PD_LOG(PDLog, Log, TEXT("ComboNext 2"));
-
-		FName NextSection = AttackComponent->GetNextSection(Weapon->GetMaxComboLen());
-		AnimInstance->Montage_JumpToSection(NextSection, Weapon->GetAnimMontage());
-
-	}
-}
-
-void APDCharacterPlayer::ComboEnd()
-{
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-}
-
 void APDCharacterPlayer::PlayAttackAnimation()
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
-	if (AnimInstance)
+	if (AnimInstance == nullptr)
 	{
-		AnimInstance->StopAllMontages(0.0f);
-		AnimInstance->Montage_Play(Weapon->GetAnimMontage(), Weapon->GetPlayRate());
+		return;
 	}
-}
 
-void APDCharacterPlayer::ComboInit()
-{
-	PD_LOG(PDLog, Log, TEXT("ComboInit"));
-	AttackComponent->ComboAttackIndex = 0;
-
-}
-
-
-void APDCharacterPlayer::OnRep_CanAttack()
-{
-	if (!bCanAttack)
+	if (!AnimInstance->Montage_IsPlaying(Weapon->GetAnimMontage()))
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+		AnimInstance->Montage_Play(Weapon->GetAnimMontage(), Weapon->GetPlayRate());
 	}
 	else
 	{
-		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+		AttackComponent->ComboAttackIndex = 1;
 	}
 }
 
-void APDCharacterPlayer::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+void APDCharacterPlayer::PlayMontageNotifyBegin()
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
-	DOREPLIFETIME(APDCharacterPlayer, bCanAttack);
-}
-
-void APDCharacterPlayer::ClientRPCBaseSkill_Implementation(APDCharacterPlayer* OtherPlayer)
-{
-	if (OtherPlayer)
+	if (AnimInstance == nullptr)
 	{
-		OtherPlayer->PlayAttackAnimation();
+		return;
 	}
+
+	AttackComponent->ComboAttackIndex--;
+
+	if (AttackComponent->ComboAttackIndex < 0)
+	{
+		AttackComponent->ComboAttackIndex = 0;
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+		AnimInstance->StopAllMontages(0.35f);
+	}
+}
+
+void APDCharacterPlayer::ServerRPCEndedAttack_Implementation()
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 }

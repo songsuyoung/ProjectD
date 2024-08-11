@@ -49,14 +49,8 @@ FName UPDSkillComponent::GetNextSection(int MaxLen)
 
 void UPDSkillComponent::AttackBaseByAxe()
 {
-	//Animation Montage มกวม
-	APDCharacterPlayer* Pawn = Cast<APDCharacterPlayer>(GetOwner());
-	if (Pawn)
-	{
-		Pawn->ComboBegin();
-		Pawn->GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &UPDSkillComponent::ResetAttack, AttackTime, false);
-		ServerRPCBaseSkill(GetWorld()->GetGameState()->GetServerWorldTimeSeconds());
-	}
+	ServerRPCBaseSkill();
+
 }
 
 void UPDSkillComponent::SkillQByAxe()
@@ -114,46 +108,23 @@ void UPDSkillComponent::SkillEByBow()
 	PD_SUBLOG(PDLog, Log, TEXT("Attack SkillE"));
 }
 
-
 void UPDSkillComponent::ResetAttack()
 {
 	//Pawn->ComboEnd();
 }
 
-void UPDSkillComponent::ServerRPCBaseSkill_Implementation(float AttackStartTime)
+void UPDSkillComponent::ServerRPCBaseSkill_Implementation()
 {
-	APDCharacterPlayer* Pawn = Cast<APDCharacterPlayer>(GetOwner());
-
-	if (Pawn == nullptr)
-	{
-		return;
-	}
-	Pawn->OnRep_CanAttack();
-	//OnRep
-	AttackTimeDifference = GetWorld()->GetTimeSeconds() - AttackStartTime;
-	AttackTimeDifference = FMath::Clamp(AttackTimeDifference, 0.0f, AttackTime - 0.01f);
-
-	Pawn->GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &UPDSkillComponent::ResetAttack, AttackTime - AttackTimeDifference, false);
-
-	LastAttackStartTime = AttackStartTime;
-	
-
-	Pawn->PlayAttackAnimation();
-		
-	for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
-	{
-		if (PlayerController && Pawn->GetController() != PlayerController)
-		{
-			if (!PlayerController->IsLocalController())
-			{
-				APDCharacterPlayer* OtherPlayer = Cast<APDCharacterPlayer>(PlayerController->GetPawn());
-				if (OtherPlayer)
-				{
-					OtherPlayer->ClientRPCBaseSkill(Pawn);
-				}
-			}
-		}
-	}
+	MulticastRPCBaseSkill();
 }
 
+void UPDSkillComponent::MulticastRPCBaseSkill_Implementation()
+{
+	APDCharacterPlayer *Player = Cast<APDCharacterPlayer>(GetOwner());
 
+	if (Player)
+	{
+		Player->PlayAttackAnimation();
+	}
+
+}
