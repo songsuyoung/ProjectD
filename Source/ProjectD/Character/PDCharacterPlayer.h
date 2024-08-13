@@ -68,6 +68,18 @@ public:
 	UFUNCTION(Server,Reliable)
 	void ServerRPCEndedAttack();
 
+	/*Attack?*/
+	bool GetFinalComboAttack() { return bIsFinalComboAttack; }
+	bool GetAttacking() { return bIsAttacking; }
+protected:
+
+	UPROPERTY(Meta = (AllowPrivateAccess = "true"))
+	uint8 bIsAttacking : 1;
+	/*현재 공격중인지를 체크한다. 현재 공격 중일 때에는 이동하지 못하게 막기 위해서*/
+
+	UPROPERTY(Meta = (AllowPrivateAccess = "true"))
+	uint8 bIsFinalComboAttack : 1;
+	/*마지막 콤보 공격인지를 확인한다. 쓸데 없는 RPC 전송을 막기 위해서*/
 protected:
 	/*Defualt Player*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Player, Meta = (AllowPrivateAccess = "true"))

@@ -134,25 +134,6 @@ void APDCharacterPlayer::BeginPlay()
 	}
 }
 
-
-void APDCharacterPlayer::Skill(PDESkillType SkillType)
-{
-	PDEWeaponType WeaponType = Weapon->GetWeaponType();
-
-	TArray<FAttackSkillDelegateWrapper> FoundDelegates;
-	AttackComponent->AttackDelegate.MultiFind(WeaponType, FoundDelegates);
-
-	for (const FAttackSkillDelegateWrapper& DelegateWrapper : FoundDelegates)
-	{
-		if (DelegateWrapper.AttackSkillDelegate.Find(SkillType) == false)
-		{
-			continue;
-		}
-		DelegateWrapper.AttackSkillDelegate[SkillType].Execute();
-	}
-
-}
-
 void APDCharacterPlayer::AddMovementInput(FVector WorldDirection, float ScaleValue, bool bForce)
 {
 	Super::AddMovementInput(WorldDirection, ScaleValue, bForce);
@@ -240,6 +221,24 @@ void APDCharacterPlayer::ClearPath()
 	}
 }
 
+void APDCharacterPlayer::Skill(PDESkillType SkillType)
+{
+	PDEWeaponType WeaponType = Weapon->GetWeaponType();
+
+	TArray<FAttackSkillDelegateWrapper> FoundDelegates;
+	AttackComponent->AttackDelegate.MultiFind(WeaponType, FoundDelegates);
+
+	for (const FAttackSkillDelegateWrapper& DelegateWrapper : FoundDelegates)
+	{
+		if (DelegateWrapper.AttackSkillDelegate.Find(SkillType) == false)
+		{
+			continue;
+		}
+		DelegateWrapper.AttackSkillDelegate[SkillType].Execute();
+	}
+
+}
+
 void APDCharacterPlayer::PlayAttackAnimation()
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -249,6 +248,8 @@ void APDCharacterPlayer::PlayAttackAnimation()
 		return;
 	}
 
+	bIsAttacking = true;
+
 	if (!AnimInstance->Montage_IsPlaying(Weapon->GetAnimMontage()))
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
@@ -256,6 +257,7 @@ void APDCharacterPlayer::PlayAttackAnimation()
 	}
 	else
 	{
+		bIsFinalComboAttack = true;
 		AttackComponent->ComboAttackIndex = 1;
 	}
 }
@@ -273,13 +275,17 @@ void APDCharacterPlayer::PlayMontageNotifyBegin()
 
 	if (AttackComponent->ComboAttackIndex < 0)
 	{
+		bIsAttacking = false;
 		AttackComponent->ComboAttackIndex = 0;
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 		AnimInstance->StopAllMontages(0.35f);
 	}
+
+	bIsFinalComboAttack = false;
 }
 
 void APDCharacterPlayer::ServerRPCEndedAttack_Implementation()
 {
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	PlayMontageNotifyBegin();
+	bIsAttacking = false;
 }

@@ -47,8 +47,7 @@ public:
 	TMultiMap< PDEWeaponType, FAttackSkillDelegateWrapper> AttackDelegate;
 
 	int8 ComboAttackIndex;
-	int ComboAttackLen;
-	FName GetNextSection(int MaxLen);
+
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
 
 protected:
@@ -86,12 +85,5 @@ protected:
 
 	UFUNCTION(NetMulticast,Reliable)
 	void MulticastRPCBaseSkill();
-
-	void ResetAttack();
-
-	FTimerHandle AttackTimerHandle;
-	float AttackTime;
-	float LastAttackStartTime;
-	float AttackTimeDifference;
 
 };

@@ -23,7 +23,7 @@ void UPDNextComboNotify::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequen
 
 	if (Pawn)
 	{
+		Pawn->PlayMontageNotifyBegin();
 		Pawn->ServerRPCEndedAttack();
-		Pawn->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	}
 }

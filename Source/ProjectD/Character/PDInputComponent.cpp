@@ -133,6 +133,9 @@ void UPDInputComponent::SetCharacterControl()
 void UPDInputComponent::OnMoveInputStarted()
 {
 	if (PC == nullptr) return;
+	if (Owner == nullptr) return;
+
+	if (Owner->GetAttacking()) return; //현재 공격중임으로 움직이지 못하도록 한다.
 	
 	PC->StopMovement(); //시작할 때 기존 움직임을 멈추고,
 }
@@ -140,6 +143,7 @@ void UPDInputComponent::OnMoveInputStarted()
 void UPDInputComponent::OnSetDestinationTriggered()
 {
 	if (PC == nullptr || Owner == nullptr) return;
+	if (Owner->GetAttacking()) return; //현재 공격중임으로 움직이지 못하도록 한다.
 
 	FollowTime += GetWorld()->GetDeltaSeconds();
 
@@ -218,10 +222,9 @@ void UPDInputComponent::Attack(PDESkillType SkillType)
 {
 	//현재 공격중이면 공격하면 안된다.
 	
-	//if (Owner->GetAttacking())
+	//입력받은 키를 전달할 예정
+	if (Owner->GetFinalComboAttack() == false)
 	{
-		PD_SUBLOG(PDLog, Log, TEXT("1"));
-		//입력받은 키를 전달할 예정
 		Owner->Skill(SkillType);
 	}
 }

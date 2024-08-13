@@ -39,18 +39,9 @@ void UPDSkillComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	AttackDelegate.Remove(PDEWeaponType::Bow);
 }
 
-FName UPDSkillComponent::GetNextSection(int MaxLen)
-{
-	ComboAttackIndex = FMath::Clamp(ComboAttackIndex + 1, 1, MaxLen);
-	FName NextPunchSection = *FString::Printf(TEXT("Combo%d"), ComboAttackIndex);
-
-	return NextPunchSection;
-}
-
 void UPDSkillComponent::AttackBaseByAxe()
 {
 	ServerRPCBaseSkill();
-
 }
 
 void UPDSkillComponent::SkillQByAxe()
@@ -106,11 +97,6 @@ void UPDSkillComponent::SkillWByBow()
 void UPDSkillComponent::SkillEByBow()
 {
 	PD_SUBLOG(PDLog, Log, TEXT("Attack SkillE"));
-}
-
-void UPDSkillComponent::ResetAttack()
-{
-	//Pawn->ComboEnd();
 }
 
 void UPDSkillComponent::ServerRPCBaseSkill_Implementation()
