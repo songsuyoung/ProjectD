@@ -6,7 +6,6 @@
 #include "Character/PDCharacterBase.h"
 #include "GameData/PDEWeaponType.h"
 #include "GameData/PDESkillType.h"
-#include "Interfaces/PDWidgetInterface.h"
 #include "Interfaces/PDClearPathInterface.h"
 #include "PDCharacterPlayer.generated.h"
 
@@ -14,7 +13,7 @@
  * 
  */
 UCLASS()
-class PROJECTD_API APDCharacterPlayer : public APDCharacterBase, public IPDClearPathInterface, public IPDWidgetInterface
+class PROJECTD_API APDCharacterPlayer : public APDCharacterBase, public IPDClearPathInterface
 {
 	GENERATED_BODY()
 	
@@ -94,13 +93,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget)
 	TObjectPtr<class UPDHPWidgetComponent> HPWidget;
-
-	virtual void InitWidget(class UPDUserWidget* StatWidget) override;
-
-	/*Stat*/
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UPDStatComponent> Stat;
 
 public:
 

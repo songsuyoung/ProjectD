@@ -3,6 +3,7 @@
 
 #include "UI/PDHPWidgetComponent.h"
 #include "UI/PDUserWidget.h"
+#include "GameFramework/Character.h"
 
 void UPDHPWidgetComponent::InitWidget()
 {
@@ -13,8 +14,9 @@ void UPDHPWidgetComponent::InitWidget()
 	//인게임 내에 있는 HP 값을 변화시키기 위해서 오너를 설정해준다.
 	UPDUserWidget* UserWidget = Cast<UPDUserWidget>(GetWidget());
 
+	ACharacter* Pawn = Cast<ACharacter>(GetOwner());
 	if (UserWidget)
 	{
-		UserWidget->SetOwner(GetOwner());
+		UserWidget->SetOwner(Pawn->GetPlayerState());
 	}
 }

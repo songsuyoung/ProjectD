@@ -6,7 +6,7 @@
 #include "Player/PDPlayerState.h"
 #include "Stat/PDStatComponent.h"
 
-#include "UI/PDStat.h"
+#include "UI/PDMainWidget.h"
 #include "ProjectD.h"
 void APDHUD::CreateUI()
 {
@@ -73,23 +73,23 @@ void APDHUD::SetHidden(PDEUIType UIType)
 
 void APDHUD::UpdatedHP(float InHP, float InMaxHP)
 {
-    UPDStat* Widget = Cast<UPDStat>(HUDs[PDEUIType::Main]);
+    UPDMainWidget* Widget = Cast<UPDMainWidget>(HUDs[PDEUIType::Main]);
 
     if (Widget)
     {
         //Update HP
-        Widget->SetProgressBar(InHP, InMaxHP);
+        Widget->SetHPProgressBar(InHP, InMaxHP);
     }
 }
 
 void APDHUD::OnUpdatedStamina(float InStamina, float InMaxStamina)
 {
-    UPDStat* Widget = Cast<UPDStat>(HUDs[PDEUIType::Main]);
+    UPDMainWidget* Widget = Cast<UPDMainWidget>(HUDs[PDEUIType::Main]);
 
     if (Widget)
     {
         //Update Stamina
-        Widget->SetProgressBar(InStamina, InMaxStamina);
+        Widget->SetStaminaProgressBar(InStamina, InMaxStamina);
     }
 }
 

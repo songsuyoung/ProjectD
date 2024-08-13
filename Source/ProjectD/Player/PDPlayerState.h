@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
+#include "Interfaces/PDWidgetInterface.h"
 #include "PDPlayerState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTD_API APDPlayerState : public APlayerState
+class PROJECTD_API APDPlayerState : public APlayerState, public IPDWidgetInterface
 {
 	GENERATED_BODY()	
 public:
@@ -19,6 +20,8 @@ public:
 	virtual void BeginPlay() override;
 
 	class UPDStatComponent* GetStat() { return Stat; }
+
+	virtual void InitWidget(class UPDUserWidget* StatWidget) override;
 private:
 	//Player Info
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))

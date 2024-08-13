@@ -18,9 +18,7 @@
 #include "Components/SplineMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Net/UnrealNetwork.h"
-#include "Stat/PDStatComponent.h"
 
-#include "UI/PDUserWidget.h"
 #include "GameData/PDDataManager.h"
 #include "Interfaces/PDPostMissionInterface.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -74,7 +72,6 @@ APDCharacterPlayer::APDCharacterPlayer()
 
 	AttackComponent = CreateDefaultSubobject<UPDSkillComponent>(TEXT("SkillComponent"));
 	Path = CreateDefaultSubobject<USplineComponent>(TEXT("Path"));
-	Stat = CreateDefaultSubobject<UPDStatComponent>(TEXT("Stat"));
 }
 
 USpringArmComponent* APDCharacterPlayer::GetSpringArm()
@@ -134,18 +131,6 @@ void APDCharacterPlayer::BeginPlay()
 	if (IsLocallyControlled())
 	{
 		SetPath();
-	}
-}
-
-void APDCharacterPlayer::InitWidget(UPDUserWidget* StatWidget)
-{
-	UPDStat *UIStat =Cast<UPDStat>(StatWidget);
-
-	if (UIStat)
-	{
-		UIStat->SetProgressBar(Stat->GetHP(), Stat->GetMaxHP());
-
-		Stat->OnUpdatedHP.AddUObject(UIStat, &UPDStat::SetProgressBar);
 	}
 }
 

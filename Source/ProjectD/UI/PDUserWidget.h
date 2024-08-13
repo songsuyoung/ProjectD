@@ -16,9 +16,9 @@ class PROJECTD_API UPDUserWidget : public UUserWidget
 	
 public:
 
-	FORCEINLINE void SetOwner(class AActor* InOwner) { Owner = InOwner; }
+	FORCEINLINE void SetOwner(class APlayerState* InOwner) { Owner = InOwner; }
 protected:
 
 	UPROPERTY()
-	TObjectPtr<class AActor> Owner;
+	TObjectPtr<class APlayerState> Owner;
 };
