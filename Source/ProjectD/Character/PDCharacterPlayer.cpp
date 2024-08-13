@@ -18,7 +18,9 @@
 #include "Components/SplineMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Net/UnrealNetwork.h"
+#include "Stat/PDStatComponent.h"
 
+#include "UI/PDUserWidget.h"
 #include "GameData/PDDataManager.h"
 #include "Interfaces/PDPostMissionInterface.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -59,7 +61,7 @@ APDCharacterPlayer::APDCharacterPlayer()
 	/*머리를 움직일 때마다 같이 따라다니면서 움직여야함.*/
 	HPWidget->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("head"));
 	HPWidget->SetWidgetSpace(EWidgetSpace::Screen); //스크린상에 띄울 예정
-	HPWidget->SetDrawSize(FVector2D(30.f, 60.f));
+	HPWidget->SetDrawSize(FVector2D(200.f, 40.f));
 	HPWidget->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
 	/*HPWidget UserWidget*/
@@ -72,6 +74,7 @@ APDCharacterPlayer::APDCharacterPlayer()
 
 	AttackComponent = CreateDefaultSubobject<UPDSkillComponent>(TEXT("SkillComponent"));
 	Path = CreateDefaultSubobject<USplineComponent>(TEXT("Path"));
+	Stat = CreateDefaultSubobject<UPDStatComponent>(TEXT("Stat"));
 }
 
 USpringArmComponent* APDCharacterPlayer::GetSpringArm()
@@ -131,6 +134,18 @@ void APDCharacterPlayer::BeginPlay()
 	if (IsLocallyControlled())
 	{
 		SetPath();
+	}
+}
+
+void APDCharacterPlayer::InitWidget(UPDUserWidget* StatWidget)
+{
+	UPDStat *UIStat =Cast<UPDStat>(StatWidget);
+
+	if (UIStat)
+	{
+		UIStat->SetProgressBar(Stat->GetHP(), Stat->GetMaxHP());
+
+		Stat->OnUpdatedHP.AddUObject(UIStat, &UPDStat::SetProgressBar);
 	}
 }
 
@@ -252,6 +267,8 @@ void APDCharacterPlayer::PlayAttackAnimation()
 
 	if (!AnimInstance->Montage_IsPlaying(Weapon->GetAnimMontage()))
 	{
+		/* 첫 콤보 시작시, ComboAttackIndex는 1을 나타낸다, 사실 1뿐만 아니라, 발생했냐 안했냐의 유무를 나타낸다.*/
+		/* Notify가 끝나게 되면 0으로 자동으로 줄이기 때문에 콤보공격을 표현할 수 있다.*/
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 		AnimInstance->Montage_Play(Weapon->GetAnimMontage(), Weapon->GetPlayRate());
 	}
@@ -271,21 +288,23 @@ void APDCharacterPlayer::PlayMontageNotifyBegin()
 		return;
 	}
 
-	AttackComponent->ComboAttackIndex--;
+	AttackComponent->ComboAttackIndex--; /*줄어드는데, 0이하가 아니라면, 콤보 애니메이션을 멈추지않는다.*/
 
 	if (AttackComponent->ComboAttackIndex < 0)
 	{
+		/* 모든 애니메이션 */
 		bIsAttacking = false;
 		AttackComponent->ComboAttackIndex = 0;
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-		AnimInstance->StopAllMontages(0.35f);
+		AnimInstance->StopAllMontages(0.35f); 
+		/*0이 됐을 때엔 모든 콤보 공격이 끝났음을 의미해서, 애니메이션 몽타주를 멈춘다.*/
 	}
 
 	bIsFinalComboAttack = false;
 }
-
+/* 데디케이티드 환경에서는 애니메이션 노티파이가 진행되지 않는다. 처음엔 몰랐으나, 서버에서 작동안하는 걸 보고
+알게 됐다. 이를 해결하기 위해서 ServerRPC를 사용해 모든 작업을 수행해주어야한다. */
 void APDCharacterPlayer::ServerRPCEndedAttack_Implementation()
 {
 	PlayMontageNotifyBegin();
-	bIsAttacking = false;
 }

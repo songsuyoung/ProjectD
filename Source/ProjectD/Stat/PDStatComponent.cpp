@@ -10,3 +10,23 @@ UPDStatComponent::UPDStatComponent()
 	
 }
 
+void UPDStatComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	Init(100.f, 50.f, 30.f);
+}
+
+void UPDStatComponent::Init(float InMaxHp, float InMaxStamina, float InMaxPower)
+{
+	/*스탯 초기화를 수행해준다. 현재는 박혀있는 값이지만, 엑셀을 불러와서 초기화 예정*/
+	SetMaxHP(InMaxHp);
+	SetHP(MaxHP);
+
+	SetMaxStamina(InMaxStamina);
+	SetStamina(MaxStamina);
+
+	SetMaxPower(InMaxPower);
+	SetPower(MaxPower);
+}
+

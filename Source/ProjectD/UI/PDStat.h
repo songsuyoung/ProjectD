@@ -3,18 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "UI/PDUserWidget.h"
 #include "PDStat.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTD_API UPDStat : public UUserWidget
+class PROJECTD_API UPDStat : public UPDUserWidget
 {
 	GENERATED_BODY()
 	
 public:
+
+	UPDStat(const FObjectInitializer& ObjectInitializer);
+	virtual void NativeConstruct() override;
 
 	void SetProgressBar(float InCurrentVal, float InMaxVal);
 	void SetPercentage(float InCurrentVal, float InMaxVal);
